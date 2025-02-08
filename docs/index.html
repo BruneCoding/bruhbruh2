@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Web App</title>
+    <script type="module" src="script.js"></script> <!-- Link to the JS file -->
+</head>
+<body>
+    <!-- Signup Form -->
+    <h2>Sign Up</h2>
+    <form id="signup-form">
+        <input type="email" id="signup-email" placeholder="Enter your email" required>
+        <input type="password" id="signup-password" placeholder="Enter your password" required>
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <div id="signup-message"></div>
+
+    <!-- Login Form -->
+    <h2>Login</h2>
+    <form id="login-form">
+        <input type="email" id="login-email" placeholder="Enter your email" required>
+        <input type="password" id="login-password" placeholder="Enter your password" required>
+        <button type="submit">Login</button>
+    </form>
+
+    <div id="login-message"></div>
+
+    <!-- Display all posts -->
+    <div id="posts-list"></div>
+</body>
+</html>
