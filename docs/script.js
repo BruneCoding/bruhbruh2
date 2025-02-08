@@ -1,4 +1,4 @@
-alert('hi')
+alert('hiya!')
 
 // Firebase SDK imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
