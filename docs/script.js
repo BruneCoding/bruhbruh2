@@ -1,6 +1,7 @@
-// Firebase SDK imports (for modular SDK version 9+)
+// Firebase SDK imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";  // Import Firestore SDK
 
 // Firebase config (replace with your actual Firebase project config)
 const firebaseConfig = {
@@ -16,17 +17,19 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app); // Firebase Authentication
+const db = getFirestore(app); // Firebase Firestore
 
-// Get DOM elements for Signup and Login forms
+// Get DOM elements
 const signupForm = document.getElementById('signup-form');
 const loginForm = document.getElementById('login-form');
+const postFormSection = document.getElementById('postFormSection');
+const postsContainer = document.getElementById('postsContainer');
 const signupMessage = document.getElementById('signup-message');
 const loginMessage = document.getElementById('login-message');
 
 // Signup function
 signupForm.addEventListener('submit', async (e) => {
   e.preventDefault(); // Prevent form from refreshing the page
-
   const email = document.getElementById('signup-email').value;
   const password = document.getElementById('signup-password').value;
 
@@ -35,7 +38,6 @@ signupForm.addEventListener('submit', async (e) => {
     const user = userCredential.user;
     console.log('User signed up:', user);
     signupMessage.innerHTML = `Welcome, ${user.email}! You have successfully signed up.`;
-    // Optionally, you can redirect to a logged-in page or show the posts page
   } catch (error) {
     console.error("Error signing up:", error.message);
     signupMessage.innerHTML = `Error: ${error.message}`;
@@ -45,7 +47,6 @@ signupForm.addEventListener('submit', async (e) => {
 // Login function
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault(); // Prevent form from refreshing the page
-
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
@@ -54,9 +55,49 @@ loginForm.addEventListener('submit', async (e) => {
     const user = userCredential.user;
     console.log('User logged in:', user);
     loginMessage.innerHTML = `Welcome back, ${user.email}! You are now logged in.`;
-    // Optionally, you can redirect to a logged-in page or show the posts page
+    postFormSection.style.display = 'block';  // Show post creation section
+    displayPosts();  // Display existing posts
   } catch (error) {
     console.error("Error logging in:", error.message);
     loginMessage.innerHTML = `Error: ${error.message}`;
   }
 });
+
+// Create post function
+async function createPost() {
+  const postText = document.getElementById('postText').value;
+
+  if (!postText) {
+    alert('Please write something to post!');
+    return;
+  }
+
+  try {
+    const user = auth.currentUser;  // Get the current logged-in user
+    const docRef = await addDoc(collection(db, "posts"), {
+      userEmail: user.email,
+      text: postText,
+      timestamp: new Date()
+    });
+
+    console.log("Post added with ID: ", docRef.id);
+    document.getElementById('postText').value = '';  // Clear the post input
+    displayPosts();  // Reload posts
+  } catch (e) {
+    console.error("Error adding post: ", e);
+  }
+}
+
+// Display posts function
+async function displayPosts() {
+  const querySnapshot = await getDocs(collection(db, "posts"));
+  postsContainer.innerHTML = '';  // Clear current posts
+
+  querySnapshot.forEach((doc) => {
+    const post = doc.data();
+    const postElement = document.createElement('div');
+    postElement.className = 'post';
+    postElement.innerHTML = `<strong>${post.userEmail}</strong>: ${post.text}`;
+    postsContainer.appendChild(postElement);
+  });
+}
