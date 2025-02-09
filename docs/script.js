@@ -1,12 +1,12 @@
-alert('bonkydonk')
+alert('bonkyaaadonk');
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";  // Import Firestore SDK
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";
 
 // Firebase config (replace with your actual Firebase project config)
 const firebaseConfig = {
   apiKey: "AIzaSyCAvXu7uUr40QyKZiNdGqUBYSiwnYamJs8",
-  authDomain: "bruhbruh-7e026.firebaseapp.com",
+  authDomain: "bruhbruh-7e026.firebaseapp.com",  
   projectId: "bruhbruh-7e026",
   storageBucket: "bruhbruh-7e026.firebasestorage.app",
   messagingSenderId: "912287151945",
@@ -29,7 +29,7 @@ const loginMessage = document.getElementById('login-message');
 
 // Signup function
 signupForm.addEventListener('submit', async (e) => {
-  e.preventDefault(); // Prevent form from refreshing the page
+  e.preventDefault();
   const email = document.getElementById('signup-email').value;
   const password = document.getElementById('signup-password').value;
 
@@ -46,7 +46,7 @@ signupForm.addEventListener('submit', async (e) => {
 
 // Login function
 loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault(); // Prevent form from refreshing the page
+  e.preventDefault();
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
@@ -55,8 +55,7 @@ loginForm.addEventListener('submit', async (e) => {
     const user = userCredential.user;
     console.log('User logged in:', user);
     loginMessage.innerHTML = `Welcome back, ${user.email}! You are now logged in.`;
-    postFormSection.style.display = 'block';  // Show post creation section
-    displayPosts();  // Display existing posts
+    postFormSection.style.display = 'block'; // Show post creation section
   } catch (error) {
     console.error("Error logging in:", error.message);
     loginMessage.innerHTML = `Error: ${error.message}`;
@@ -73,47 +72,51 @@ async function createPost() {
   }
 
   try {
-    const user = auth.currentUser;  // Get the current logged-in user
-    const docRef = await addDoc(collection(db, "posts"), {
+    const user = auth.currentUser;
+    await addDoc(collection(db, "posts"), {
       userEmail: user.email,
       text: postText,
-      timestamp: new Date()  // Store timestamp as a JavaScript Date object
+      timestamp: new Date()
     });
 
-    console.log("Post added with ID: ", docRef.id);
-    document.getElementById('postText').value = '';  // Clear the post input
-    displayPosts();  // Reload posts
+    console.log("Post added successfully");
+    document.getElementById('postText').value = ''; // Clear the post input
   } catch (e) {
     console.error("Error adding post: ", e);
   }
 }
 
-// Display posts function
-async function displayPosts() {
-  const querySnapshot = await getDocs(collection(db, "posts"));
-  postsContainer.innerHTML = '';  // Clear current posts
+// Display posts in real-time
+function displayPosts() {
+  const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
 
-  querySnapshot.forEach((doc) => {
-    const post = doc.data();
-    const postElement = document.createElement('div');
-    postElement.className = 'post';
+  onSnapshot(q, (querySnapshot) => {
+    postsContainer.innerHTML = ''; // Clear posts before updating
 
-    // Check if the timestamp exists and is a Firestore Timestamp
-    if (post.timestamp && post.timestamp.toDate) {
-      const formattedDate = post.timestamp.toDate().toLocaleString();  // Convert Firestore Timestamp to Date and format it
-      postElement.innerHTML = `
-        <strong>${post.userEmail}</strong>: ${post.text}
-        <br>
-        Posted on: ${formattedDate}
-      `;
-    } else {
-      postElement.innerHTML = `
-        <strong>${post.userEmail}</strong>: ${post.text}
-        <br>
-        Posted on: Date not available
-      `;
-    }
+    querySnapshot.forEach((doc) => {
+      const post = doc.data();
+      const postElement = document.createElement('div');
+      postElement.className = 'post';
 
-    postsContainer.appendChild(postElement);
+      if (post.timestamp && post.timestamp.toDate) {
+        const formattedDate = post.timestamp.toDate().toLocaleString();
+        postElement.innerHTML = `
+          <strong>${post.userEmail}</strong>: ${post.text}
+          <br>
+          Posted on: ${formattedDate}
+        `;
+      } else {
+        postElement.innerHTML = `
+          <strong>${post.userEmail}</strong>: ${post.text}
+          <br>
+          Posted on: Date not available
+        `;
+      }
+
+      postsContainer.appendChild(postElement);
+    });
   });
-}.   
+}
+
+// Start listening for posts when the page loads
+displayPosts();
