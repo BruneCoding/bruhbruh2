@@ -1,8 +1,8 @@
-alert('Byeeeee')
-// Firebase SDK imports
+
+alert('bonk')
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";  // Import Firestore SDK
 
 // Firebase config (replace with your actual Firebase project config)
 const firebaseConfig = {
@@ -75,10 +75,16 @@ async function createPost() {
 
   try {
     const user = auth.currentUser;  // Get the current logged-in user
+    if (!user) {
+      alert("You must be logged in to post!");
+      return;
+    }
+
+    // Add post to Firestore
     const docRef = await addDoc(collection(db, "posts"), {
-      userEmail: user.email,
-      text: postText,
-      createdAt: serverTimestamp()  // Set timestamp using serverTimestamp() for accuracy
+      userEmail: user.email,  // Store the email of the user posting
+      text: postText,         // Store the post content
+      timestamp: new Date()   // Store the current timestamp
     });
 
     console.log("Post added with ID: ", docRef.id);
@@ -89,7 +95,7 @@ async function createPost() {
   }
 }
 
-// Display posts function (to show all posts)
+// Display posts function
 async function displayPosts() {
   const querySnapshot = await getDocs(collection(db, "posts"));
   postsContainer.innerHTML = '';  // Clear current posts
@@ -99,31 +105,14 @@ async function displayPosts() {
     const postElement = document.createElement('div');
     postElement.className = 'post';
 
-    // Display post with timestamp
-    const timestamp = post.createdAt ? new Date(post.createdAt.seconds * 1000) : new Date();
-    postElement.innerHTML = `<strong>${post.userEmail}</strong>: ${post.text} <br><small>Posted on: ${timestamp.toLocaleString()}</small>`;
-
+    // Format the timestamp to display nicely
+    const formattedDate = new Date(post.timestamp.seconds * 1000).toLocaleString();
+    
+    postElement.innerHTML = `
+      <strong>${post.userEmail}</strong>: ${post.text}
+      <br>
+      Posted on: ${formattedDate}
+    `;
     postsContainer.appendChild(postElement);
   });
-}
-
-// Display a specific post by ID (for example, `/posts/9VOXD71HZvgILXUkxXRP`)
-async function displaySpecificPost(postId) {
-  const postRef = doc(db, "posts", postId);
-  const docSnap = await getDoc(postRef);
-
-  if (docSnap.exists()) {
-    const post = docSnap.data();
-    const postElement = document.createElement('div');
-    postElement.className = 'post';
-
-    // Display the specific post with timestamp
-    const timestamp = post.createdAt ? new Date(post.createdAt.seconds * 1000) : new Date();
-    postElement.innerHTML = `<strong>${post.userEmail}</strong>: ${post.text} <br><small>Posted on: ${timestamp.toLocaleString()}</small>`;
-
-    postsContainer.innerHTML = '';  // Clear current posts and show the specific one
-    postsContainer.appendChild(postElement);
-  } else {
-    console.log("No such post!");
-  }
 }
