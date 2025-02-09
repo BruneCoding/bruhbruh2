@@ -1,11 +1,9 @@
-alert('bonkyadonk');
-
-// Firebase SDK imports
+alert('bonkydonk')
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js"; 
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";  // Import Firestore SDK
 
-// Firebase config
+// Firebase config (replace with your actual Firebase project config)
 const firebaseConfig = {
   apiKey: "AIzaSyCAvXu7uUr40QyKZiNdGqUBYSiwnYamJs8",
   authDomain: "bruhbruh-7e026.firebaseapp.com",
@@ -18,8 +16,8 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const auth = getAuth(app); // Firebase Authentication
+const db = getFirestore(app); // Firebase Firestore
 
 // Get DOM elements
 const signupForm = document.getElementById('signup-form');
@@ -31,28 +29,15 @@ const loginMessage = document.getElementById('login-message');
 
 // Signup function
 signupForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+  e.preventDefault(); // Prevent form from refreshing the page
   const email = document.getElementById('signup-email').value;
   const password = document.getElementById('signup-password').value;
-  const username = document.getElementById('signup-username').value; // Get username input
-
-  if (!username) {
-    signupMessage.innerHTML = "Please enter a username.";
-    return;
-  }
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
-    // Store username in Firestore
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
-      username: username
-    });
-
     console.log('User signed up:', user);
-    signupMessage.innerHTML = `Welcome, ${username}! You have successfully signed up.`;
+    signupMessage.innerHTML = `Welcome, ${user.email}! You have successfully signed up.`;
   } catch (error) {
     console.error("Error signing up:", error.message);
     signupMessage.innerHTML = `Error: ${error.message}`;
@@ -61,28 +46,17 @@ signupForm.addEventListener('submit', async (e) => {
 
 // Login function
 loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+  e.preventDefault(); // Prevent form from refreshing the page
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-
-    // Fetch user data from Firestore
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (!userDoc.exists()) {
-      loginMessage.innerHTML = "User data not found.";
-      return;
-    }
-
-    const userData = userDoc.data();
-    const username = userData.username;
-
     console.log('User logged in:', user);
-    loginMessage.innerHTML = `Welcome back, ${username}! You are now logged in.`;
-    postFormSection.style.display = 'block';  
-    displayPosts();
+    loginMessage.innerHTML = `Welcome back, ${user.email}! You are now logged in.`;
+    postFormSection.style.display = 'block';  // Show post creation section
+    displayPosts();  // Display existing posts
   } catch (error) {
     console.error("Error logging in:", error.message);
     loginMessage.innerHTML = `Error: ${error.message}`;
@@ -99,32 +73,16 @@ async function createPost() {
   }
 
   try {
-    const user = auth.currentUser;
-    if (!user) {
-      alert('You must be logged in to post.');
-      return;
-    }
-
-    // Fetch the username from Firestore
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (!userDoc.exists()) {
-      alert('User data not found.');
-      return;
-    }
-
-    const userData = userDoc.data();
-    const username = userData.username;
-
-    // Store post in Firestore
-    await addDoc(collection(db, "posts"), {
-      username: username,
+    const user = auth.currentUser;  // Get the current logged-in user
+    const docRef = await addDoc(collection(db, "posts"), {
+      userEmail: user.email,
       text: postText,
-      timestamp: new Date()
+      timestamp: new Date()  // Store timestamp as a JavaScript Date object
     });
 
-    console.log("Post added successfully");
-    document.getElementById('postText').value = '';
-    displayPosts();
+    console.log("Post added with ID: ", docRef.id);
+    document.getElementById('postText').value = '';  // Clear the post input
+    displayPosts();  // Reload posts
   } catch (e) {
     console.error("Error adding post: ", e);
   }
@@ -133,23 +91,24 @@ async function createPost() {
 // Display posts function
 async function displayPosts() {
   const querySnapshot = await getDocs(collection(db, "posts"));
-  postsContainer.innerHTML = '';  
+  postsContainer.innerHTML = '';  // Clear current posts
 
   querySnapshot.forEach((doc) => {
     const post = doc.data();
     const postElement = document.createElement('div');
     postElement.className = 'post';
 
+    // Check if the timestamp exists and is a Firestore Timestamp
     if (post.timestamp && post.timestamp.toDate) {
-      const formattedDate = post.timestamp.toDate().toLocaleString();  
+      const formattedDate = post.timestamp.toDate().toLocaleString();  // Convert Firestore Timestamp to Date and format it
       postElement.innerHTML = `
-        <strong>${post.username}</strong>: ${post.text}
+        <strong>${post.userEmail}</strong>: ${post.text}
         <br>
         Posted on: ${formattedDate}
       `;
     } else {
       postElement.innerHTML = `
-        <strong>${post.username}</strong>: ${post.text}
+        <strong>${post.userEmail}</strong>: ${post.text}
         <br>
         Posted on: Date not available
       `;
@@ -157,4 +116,4 @@ async function displayPosts() {
 
     postsContainer.appendChild(postElement);
   });
-}
+}.   make the posts system like the username system or smth. it sisnt working how u did it
