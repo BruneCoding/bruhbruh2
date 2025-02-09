@@ -34,37 +34,41 @@
         </div>
 
         <!-- Post Form (Visible after login) -->
-        <!-- Post Form (Visible after login) -->
-<div id="postFormSection" style="display: none;">
-    <div class="post-form">
-        <input type="text" id="postText" placeholder="Write your post here..." />
-        <button onclick="createPost()">Create Post</button>
+        <div id="postFormSection" style="display: none;">
+            <div class="post-form">
+                <!-- Change the ID to match the script -->
+                <input type="text" id="post-content" placeholder="Write your post here..." />
+                <button onclick="createPost()">Create Post</button>
+            </div>
+            <div class="posts" id="postsContainer">
+                <!-- Posts will appear here -->
+            </div>
+        </div>
     </div>
-    <div class="posts" id="postsContainer">
-        <!-- Posts will appear here -->
-    </div>
-</div>
-
 
     <!-- Firebase Script -->
     <script type="module" src="script.js"></script> <!-- Link to your firebase.js file -->
-<script> function createPost() {
-    const postContent = document.getElementById('post-content').value;
-    const postsContainer = document.getElementById('posts-container');
-    
-    if (postContent.trim() !== '') {
-      const newPostElement = document.createElement('div');
-      newPostElement.classList.add('post');
-      newPostElement.textContent = postContent;
-  
-      // Add the new post to the posts container
-      postsContainer.appendChild(newPostElement);
-      
-      // Optionally, clear the input field after posting
-      document.getElementById('post-content').value = '';
-    } else {
-      alert("Please enter some text to create a post.");
-    }
-  }</script>
+
+    <script>
+      // Updated createPost function
+      function createPost() {
+        const postContent = document.getElementById('post-content').value; // Change to post-content
+        const postsContainer = document.getElementById('postsContainer');
+        
+        if (postContent.trim() !== '') {
+          const newPostElement = document.createElement('div');
+          newPostElement.classList.add('post');
+          newPostElement.textContent = postContent;
+
+          // Add the new post to the posts container
+          postsContainer.appendChild(newPostElement);
+          
+          // Optionally, clear the input field after posting
+          document.getElementById('post-content').value = '';
+        } else {
+          alert("Please enter some text to create a post.");
+        }
+      }
+    </script>
 </body>
 </html>
