@@ -5,7 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BruhBruh Posts</title>
     <style>
-        /* Your styling here */
+       /* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #0a0a0a;
+    color: #fff;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0, 255, 255, 0.5);
+    animation: fadeIn 1s ease-in-out;
+}
+
+h1 {
+    font-size: 2.5rem;
+    text-shadow: 0 0 10px cyan;
+    animation: glow 1.5s infinite alternate;
+}
+
+/* Forms */
+form {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
+    margin-bottom: 15px;
+}
+
+input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transition: 0.3s;
+}
+
+input:focus {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0px 0px 10px cyan;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: cyan;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 0 10px cyan;
+}
+
+button:hover {
+    background: #00e1ff;
+    box-shadow: 0 0 20px cyan;
+    transform: scale(1.05);
+}
+
+/* Post Form */
+.post-form {
+    margin: 20px 0;
+}
+
+.posts {
+    margin-top: 20px;
+}
+
+.post {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    box-shadow: 0px 0px 10px rgba(0, 255, 255, 0.5);
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Animations */
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px cyan;
+    }
+    to {
+        text-shadow: 0 0 20px cyan, 0 0 30px cyan;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
     </style>
 </head>
 <body>
@@ -36,8 +149,8 @@
         <!-- Post Form (Visible after login) -->
         <div id="postFormSection" style="display: none;">
             <div class="post-form">
-                <!-- Change the ID to match the script -->
-                <input type="text" id="post-content" placeholder="Write your post here..." />
+                <!-- Updated ID to match JavaScript -->
+                <input type="text" id="postText" placeholder="Write your post here..." />
                 <button onclick="createPost()">Create Post</button>
             </div>
             <div class="posts" id="postsContainer">
@@ -47,28 +160,6 @@
     </div>
 
     <!-- Firebase Script -->
-    <script type="module" src="script.js"></script> <!-- Link to your firebase.js file -->
-
-    <script>
-      // Updated createPost function
-      function createPost() {
-        const postContent = document.getElementById('post-content').value; // Change to post-content
-        const postsContainer = document.getElementById('postsContainer');
-        
-        if (postContent.trim() !== '') {
-          const newPostElement = document.createElement('div');
-          newPostElement.classList.add('post');
-          newPostElement.textContent = postContent;
-
-          // Add the new post to the posts container
-          postsContainer.appendChild(newPostElement);
-          
-          // Optionally, clear the input field after posting
-          document.getElementById('post-content').value = '';
-        } else {
-          alert("Please enter some text to create a post.");
-        }
-      }
-    </script>
+    <script type="module" src="script.js"></script> <!-- Link to your external JavaScript file -->
 </body>
 </html>
