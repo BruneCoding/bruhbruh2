@@ -1,4 +1,3 @@
-alert('a')
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";  
@@ -28,41 +27,46 @@ const signupMessage = document.getElementById('signup-message');
 const loginMessage = document.getElementById('login-message');
 
 // Signup function
-signupForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('signup-email').value;
-  const password = document.getElementById('signup-password').value;
+if (signupForm) {
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
 
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    signupMessage.innerHTML = `Welcome, ${user.email}! You have successfully signed up.`;
-  } catch (error) {
-    signupMessage.innerHTML = `Error: ${error.message}`;
-  }
-});
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      signupMessage.innerHTML = `Welcome, ${user.email}! You have successfully signed up.`;
+    } catch (error) {
+      signupMessage.innerHTML = `Error: ${error.message}`;
+    }
+  });
+}
 
 // Login function
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+if (loginForm) {
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    loginMessage.innerHTML = `Welcome back, ${user.email}! You are now logged in.`;
-    postFormSection.style.display = 'block';
-  } catch (error) {
-    loginMessage.innerHTML = `Error: ${error.message}`;
-  }
-});
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      loginMessage.innerHTML = `Welcome back, ${user.email}! You are now logged in.`;
+      postFormSection.style.display = 'block';
+    } catch (error) {
+      loginMessage.innerHTML = `Error: ${error.message}`;
+    }
+  });
+}
 
 // Create post function
 async function createPost() {
-  const postText = document.getElementById('postText').value;
+  const postTextElement = document.getElementById('post-content');
+  const postText = postTextElement.value.trim();
 
-  if (!postText.trim()) {
+  if (!postText) {
     alert('Please write something to post!');
     return;
   }
@@ -77,10 +81,10 @@ async function createPost() {
     await addDoc(collection(db, "posts"), {
       userEmail: user.email,
       text: postText,
-      timestamp: new Date() // Save as a JavaScript Date object
+      timestamp: new Date() // Save as JavaScript Date object
     });
 
-    document.getElementById('postText').value = ''; // Clear the post input
+    postTextElement.value = ''; // Clear the input field after posting
   } catch (error) {
     console.error("Error adding post: ", error);
   }
@@ -95,4 +99,32 @@ function listenForPosts() {
     snapshot.forEach((doc) => {
       const post = doc.data();
       const postElement = document.createElement('div');
-      postElement.className
+      postElement.className = 'post';
+
+      const formattedDate = post.timestamp
+        ? new Date(post.timestamp.seconds * 1000).toLocaleString()
+        : "Date not available";
+
+      postElement.innerHTML = `
+        <strong>${post.userEmail}</strong>: ${post.text}
+        <br>
+        <small>Posted on: ${formattedDate}</small>
+      `;
+
+      postsContainer.appendChild(postElement);
+    });
+  });
+}
+
+// Listen for authentication changes
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    postFormSection.style.display = 'block';
+    listenForPosts(); // Start real-time post updates
+  } else {
+    postFormSection.style.display = 'none';
+  }
+});
+
+// Expose the createPost function to the global scope
+window.createPost = createPost;
