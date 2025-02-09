@@ -116,4 +116,4 @@ async function displayPosts() {
 
     postsContainer.appendChild(postElement);
   });
-}.   make the posts system like the username system or smth. it sisnt working how u did it
+}.   
