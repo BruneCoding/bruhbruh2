@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const postsContainer = document.getElementById('postsContainer');
   const signupMessage = document.getElementById('signup-message');
   const loginMessage = document.getElementById('login-message');
-
-  // Signup function
+  
+  // Handle Sign Up form submission
   if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Login function
+  // Handle Login form submission
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -63,13 +63,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Create post function
+  // Handle Create Post button click
   const createPostButton = document.querySelector("button");
 
   if (createPostButton) {
     createPostButton.addEventListener('click', async () => {
       const postTextElement = document.getElementById('postText');
-
       if (!postTextElement) {
         console.error("Error: Post input field (#postText) not found.");
         return;
@@ -88,24 +87,26 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
+        // Add post to Firestore
         await addDoc(collection(db, "posts"), {
           userEmail: user.email,
           text: postText,
           timestamp: new Date()
         });
 
-        postTextElement.value = ''; // Clear the input field after posting
+        // Clear the post input field after posting
+        postTextElement.value = '';
       } catch (error) {
         console.error("Error adding post: ", error);
       }
     });
   }
 
-  // Real-time updates for posts
+  // Listen for new posts in real-time
   function listenForPosts() {
     const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
     onSnapshot(q, (snapshot) => {
-      postsContainer.innerHTML = '';
+      postsContainer.innerHTML = ''; // Clear posts container before adding new posts
 
       snapshot.forEach((doc) => {
         const post = doc.data();
@@ -127,11 +128,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Listen for authentication changes
+  // Listen for auth state changes (login or logout)
   onAuthStateChanged(auth, (user) => {
     if (user) {
       postFormSection.style.display = 'block';
-      listenForPosts();
+      listenForPosts(); // Start listening for posts when logged in
     } else {
       postFormSection.style.display = 'none';
     }
