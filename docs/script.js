@@ -1,7 +1,19 @@
-alert('d')
+alert('e')
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  query, 
+  orderBy, 
+  onSnapshot 
+} from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -21,14 +33,15 @@ const db = getFirestore(app);
 
 // Wait for the DOM to be fully loaded
 document.addEventListener("DOMContentLoaded", () => {
+  // Get DOM elements
   const signupForm = document.getElementById('signup-form');
   const loginForm = document.getElementById('login-form');
   const postFormSection = document.getElementById('postFormSection');
   const postsContainer = document.getElementById('postsContainer');
   const signupMessage = document.getElementById('signup-message');
   const loginMessage = document.getElementById('login-message');
-  
-  // Handle Sign Up form submission
+
+  // Signup function
   if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -45,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle Login form submission
+  // Login function
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -63,50 +76,43 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle Create Post button click
-  const createPostButton = document.querySelector("button");
-
-  if (createPostButton) {
-    createPostButton.addEventListener('click', async () => {
-      const postTextElement = document.getElementById('postText');
-      if (!postTextElement) {
-        console.error("Error: Post input field (#postText) not found.");
+  // Define the createPost function
+  async function createPost() {
+    const postTextElement = document.getElementById('postText');
+    if (!postTextElement) {
+      console.error("Error: Post input field (#postText) not found.");
+      return;
+    }
+    const postText = postTextElement.value.trim();
+    if (!postText) {
+      alert('Please write something to post!');
+      return;
+    }
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        alert('You must be logged in to post.');
         return;
       }
-
-      const postText = postTextElement.value.trim();
-      if (!postText) {
-        alert('Please write something to post!');
-        return;
-      }
-
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          alert('You must be logged in to post.');
-          return;
-        }
-
-        // Add post to Firestore
-        await addDoc(collection(db, "posts"), {
-          userEmail: user.email,
-          text: postText,
-          timestamp: new Date()
-        });
-
-        // Clear the post input field after posting
-        postTextElement.value = '';
-      } catch (error) {
-        console.error("Error adding post: ", error);
-      }
-    });
+      await addDoc(collection(db, "posts"), {
+        userEmail: user.email,
+        text: postText,
+        timestamp: new Date()
+      });
+      postTextElement.value = ''; // Clear the input field after posting
+    } catch (error) {
+      console.error("Error adding post: ", error);
+    }
   }
 
-  // Listen for new posts in real-time
+  // Expose createPost to the global scope so inline onclick attributes can find it
+  window.createPost = createPost;
+
+  // Real-time updates for posts
   function listenForPosts() {
     const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
     onSnapshot(q, (snapshot) => {
-      postsContainer.innerHTML = ''; // Clear posts container before adding new posts
+      postsContainer.innerHTML = ''; // Clear the container before appending new posts
 
       snapshot.forEach((doc) => {
         const post = doc.data();
@@ -128,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Listen for auth state changes (login or logout)
+  // Listen for authentication state changes
   onAuthStateChanged(auth, (user) => {
     if (user) {
       postFormSection.style.display = 'block';
