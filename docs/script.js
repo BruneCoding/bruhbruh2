@@ -1,9 +1,8 @@
-alert('hiiya!')
-
+alert('Byeeeee')
 // Firebase SDK imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";  // Import Firestore SDK
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";
 
 // Firebase config (replace with your actual Firebase project config)
 const firebaseConfig = {
@@ -79,7 +78,7 @@ async function createPost() {
     const docRef = await addDoc(collection(db, "posts"), {
       userEmail: user.email,
       text: postText,
-      timestamp: new Date()
+      createdAt: serverTimestamp()  // Set timestamp using serverTimestamp() for accuracy
     });
 
     console.log("Post added with ID: ", docRef.id);
@@ -90,7 +89,7 @@ async function createPost() {
   }
 }
 
-// Display posts function
+// Display posts function (to show all posts)
 async function displayPosts() {
   const querySnapshot = await getDocs(collection(db, "posts"));
   postsContainer.innerHTML = '';  // Clear current posts
@@ -99,7 +98,32 @@ async function displayPosts() {
     const post = doc.data();
     const postElement = document.createElement('div');
     postElement.className = 'post';
-    postElement.innerHTML = `<strong>${post.userEmail}</strong>: ${post.text}`;
+
+    // Display post with timestamp
+    const timestamp = post.createdAt ? new Date(post.createdAt.seconds * 1000) : new Date();
+    postElement.innerHTML = `<strong>${post.userEmail}</strong>: ${post.text} <br><small>Posted on: ${timestamp.toLocaleString()}</small>`;
+
     postsContainer.appendChild(postElement);
   });
+}
+
+// Display a specific post by ID (for example, `/posts/9VOXD71HZvgILXUkxXRP`)
+async function displaySpecificPost(postId) {
+  const postRef = doc(db, "posts", postId);
+  const docSnap = await getDoc(postRef);
+
+  if (docSnap.exists()) {
+    const post = docSnap.data();
+    const postElement = document.createElement('div');
+    postElement.className = 'post';
+
+    // Display the specific post with timestamp
+    const timestamp = post.createdAt ? new Date(post.createdAt.seconds * 1000) : new Date();
+    postElement.innerHTML = `<strong>${post.userEmail}</strong>: ${post.text} <br><small>Posted on: ${timestamp.toLocaleString()}</small>`;
+
+    postsContainer.innerHTML = '';  // Clear current posts and show the specific one
+    postsContainer.appendChild(postElement);
+  } else {
+    console.log("No such post!");
+  }
 }
