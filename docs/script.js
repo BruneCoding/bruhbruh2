@@ -1,5 +1,4 @@
-
-alert('bonk')
+alert('bonkydonk')
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";  // Import Firestore SDK
@@ -75,16 +74,10 @@ async function createPost() {
 
   try {
     const user = auth.currentUser;  // Get the current logged-in user
-    if (!user) {
-      alert("You must be logged in to post!");
-      return;
-    }
-
-    // Add post to Firestore
     const docRef = await addDoc(collection(db, "posts"), {
-      userEmail: user.email,  // Store the email of the user posting
-      text: postText,         // Store the post content
-      timestamp: new Date()   // Store the current timestamp
+      userEmail: user.email,
+      text: postText,
+      timestamp: new Date()  // Store timestamp as a JavaScript Date object
     });
 
     console.log("Post added with ID: ", docRef.id);
@@ -105,14 +98,22 @@ async function displayPosts() {
     const postElement = document.createElement('div');
     postElement.className = 'post';
 
-    // Format the timestamp to display nicely
-    const formattedDate = new Date(post.timestamp.seconds * 1000).toLocaleString();
-    
-    postElement.innerHTML = `
-      <strong>${post.userEmail}</strong>: ${post.text}
-      <br>
-      Posted on: ${formattedDate}
-    `;
+    // Check if the timestamp exists and is a Firestore Timestamp
+    if (post.timestamp && post.timestamp.toDate) {
+      const formattedDate = post.timestamp.toDate().toLocaleString();  // Convert Firestore Timestamp to Date and format it
+      postElement.innerHTML = `
+        <strong>${post.userEmail}</strong>: ${post.text}
+        <br>
+        Posted on: ${formattedDate}
+      `;
+    } else {
+      postElement.innerHTML = `
+        <strong>${post.userEmail}</strong>: ${post.text}
+        <br>
+        Posted on: Date not available
+      `;
+    }
+
     postsContainer.appendChild(postElement);
   });
 }
